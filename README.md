@@ -28,7 +28,7 @@ That said, the initial developer is using this successfully to control the light
 Install locally (library only):
 
 ```
-npm install --save coruscate
+npm install coruscate
 ```
 
 Installing globally also installs the `coruscate` command-line utility.

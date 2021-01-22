@@ -122,6 +122,7 @@ const Coruscate = {
     'Init': Init,
     'Close': Close,
     'Update': Update,
+    'SetZone': SetZone,
     'SetMode': SetMode,
     'SetColor': SetColor,
     'SetSpeed': SetSpeed,
@@ -149,6 +150,7 @@ function NewCoruscate(obj = null) {
 function Init(obj) {
     this.aura = null;
     this.descriptor = null;
+    this.zone = 0;
     this.mode = Mode.Static;
     this.color1 = Color("#000000");
     this.color2 = Color("#000000");
@@ -201,6 +203,10 @@ function Update(obj = null) {
     let aura = this;
 
     if(obj !== null) {
+        if(obj.hasOwnProperty('zone')) {
+            aura.SetZone(obj.zone);
+        }
+
         if(obj.hasOwnProperty('mode')) {
             aura.SetMode(obj.mode, false);
         }
@@ -226,6 +232,16 @@ function Update(obj = null) {
     }
 
     UpdateDevice(aura);
+}
+
+
+/***
+ * Set the zone to write
+ * @param zone
+ * @constructor
+ */
+function SetZone(zone) {
+    this.zone = zone;
 }
 
 
@@ -397,7 +413,8 @@ function FindSupportedDevice() {
 function UpdateDevice(aura) {
     let params = GetParams(aura.mode);
     let buffer = Buffer.from([
-        aura.mode,
+        aura.zone,              // Zone
+        aura.mode,              // Mode
         0x00, 0x00, 0x00,       // Color 1
         0x00,                   // speed
         0xff,                   // param
@@ -407,22 +424,22 @@ function UpdateDevice(aura) {
 
     if((aura.aura !== null) && Array.isArray(params)) {
         if(params.includes('color1')) {
-            Buffer.from(aura.color1.array()).copy(buffer, 1, 0, 3);
+            Buffer.from(aura.color1.array()).copy(buffer, 2, 0, 3);
         }
 
         // Breathe only
         if(params.includes('color2')) {
-            buffer[6] = 0x01;
-            Buffer.from(aura.color2.array()).copy(buffer, 7, 0, 3);
+            buffer[7] = 0x01;
+            Buffer.from(aura.color2.array()).copy(buffer, 8, 0, 3);
         }
 
         if(params.includes('speed')) {
-            buffer[4] = aura.speed;
+            buffer[5] = aura.speed;
         }
 
         // Rainbow only
         if(params.includes('direction')) {
-            buffer[5] = aura.dir;
+            buffer[6] = aura.dir;
         }
 
         Idle(aura.aura);
@@ -455,7 +472,7 @@ function WriteAura(aura, func, data) {
 
     setData[ 0] = 0x5e;
     setData[ 1] = func;
-    data.copy(setData, 3);
+    data.copy(setData, 2);
 
     return aura.sendFeatureReport(setData);
 }

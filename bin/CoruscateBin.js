@@ -148,6 +148,11 @@ function ProcessArgs() {
                     console.error(`Valid directions include ${dirs.join(', ')}`);
                 }
                 break;
+
+            case '-z':
+            case '--zone':
+                config.zone = GetNextArg();
+                break;
         }
     }
     while((!error) && (process.argv.length > 0));

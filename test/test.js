@@ -139,6 +139,7 @@ function main() {
     function RunOnOffTest() {
         switch(testNum++) {
             case 0:
+                console.log("Setting ColorCycle Fast");
                 aura.Update({
                     mode: 'ColorCycle',
                     speed: 'Fast'
@@ -147,11 +148,13 @@ function main() {
                 break;
 
             case 1:
+                console.log("Turning off");
                 aura.Off();
                 setTimeout(RunOnOffTest, 5000);
                 break;
 
             case 2:
+                console.log("Turning on");
                 aura.On();
                 setTimeout(RunOnOffTest, 5000);
                 break;

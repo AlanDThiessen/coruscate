@@ -21,6 +21,14 @@ function CheckConfig(config) {
 
     if(config.hasOwnProperty('off')) {
     }
+    else if(config.hasOwnProperty('on')) {
+    }
+    else if(config.hasOwnProperty('bright')) {
+        if(!config.hasOwnProperty('level')) {
+            console.error("Level is required for 'bright'");
+            valid = false;
+        }
+    }
     else if(!config.hasOwnProperty('mode')) {
         console.error('Mode is required');
         valid = false;
@@ -57,7 +65,14 @@ function RunConfig(config) {
 
         if (config.hasOwnProperty('off')) {
             aura.Off();
-        } else {
+        }
+        if (config.hasOwnProperty('on')) {
+            aura.On();
+        }
+        else if (config.hasOwnProperty('bright')) {
+            aura.SetBrightness(config.level);
+        }
+        else {
             aura.Update();
         }
 
@@ -80,6 +95,14 @@ function ProcessArgs() {
         switch (arg) {
             case 'off':
                 config.off = true;
+                break;
+
+            case 'on':
+                config.on = true;
+                break;
+
+            case 'bright':
+                config.bright = true;
                 break;
 
             case '-m':
@@ -146,6 +169,20 @@ function ProcessArgs() {
                     error = true;
                     console.error(`Invalid direction '${dir}'`);
                     console.error(`Valid directions include ${dirs.join(', ')}`);
+                }
+                break;
+
+            case '-l':
+            case '--level':
+                let level = GetNextArg();
+
+                if((level >= 0) && (level <= 1)) {
+                    config.level = level;
+                }
+                else {
+                    error = true;
+                    console.error(`Invalid level ${level}`);
+                    console.error(`Level must be a number 0 or 1`);
                 }
                 break;
 

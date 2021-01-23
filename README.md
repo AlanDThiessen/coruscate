@@ -80,6 +80,7 @@ The configuration object takes the following parameters:
    - Medium
    - Fast
 - **direction** - *string*: The direction for the mode *(currently only supported by the `Rainbow` mode)*.
+- **zone** - *number*: The zone to configure.  (The GA15DH only supports zone 0).
 
 ### Constructor Method
 
@@ -128,6 +129,20 @@ The `On` method turns the lights back on to the previously used configuration.
 ```
 
 The `Close` method is used to close communications with the device.  After this method is called no additional updates can be made.
+
+### SetBrightness
+
+```javascript
+   lights.SetBrightness(level);
+```
+
+The `SetBrightness` method immediately changes the brightness of the device.  The GA15DH only supports 0 and 1.
+
+**Parameters:**
+
+- **level** - *number, required*: The level of brightness (0, or 1) to set the device.
+
+> Note: The `On` and `Off` methods are simply aliases of `SetBrightness`.
 
 ### SetMode Method
 
@@ -193,6 +208,18 @@ The `SetDirection` method changes the direction of the current mode (if supporte
 
 - *direction* is supported by the *Rainbow* mode.
 
+### SetZone
+
+```javascript
+   lights.SetZone(zone);
+```
+
+The `SetZone` method changes the zone for the following operations.  No changes take effect immediately.  (The GA15DH only supports zone 0.)
+
+**Parameters:**
+
+- **zone** - *number, required*: The zone to begin operating on.
+
 
 ## Command Line Usage
 
@@ -212,6 +239,12 @@ or, to turn off the lights:
 $ coruscate off
 ```
 
+or, to turn on the lights:
+
+```
+$ coruscate on
+```
+
 ### Options
 
 The following options can be used.  Descriptions of these parameters match the configuration structure documented above.
@@ -221,6 +254,7 @@ The following options can be used.  Descriptions of these parameters match the c
 - `-c2 <color>`, `--color2 <color>` - Specifies the secondary color.
 - `-s <speed>`, `--speed <speed>` - Specifies the speed.
 - `-d <direction>`, `--direction <direction>` - Specifies the direction.
+- `-z <zone>`, `--zone <zone` - Specifies the zone on which to operate.
 
 
 ## Supported Platforms

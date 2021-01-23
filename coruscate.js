@@ -127,6 +127,7 @@ const Coruscate = {
     'SetColor': SetColor,
     'SetSpeed': SetSpeed,
     'SetDirection': SetDirection,
+    'SetBrightness': SetBrightness,
     'Off': Off,
     'On': On
 };
@@ -236,6 +237,24 @@ function Update(obj = null) {
 
 
 /***
+ * Set the brightness of the LEDs
+ * @param level
+ * @constructor
+ */
+function SetBrightness(level) {
+    if((level >= 0) && (level <= 1)) {
+        let buffer = Buffer.from([
+            0xC5,
+            0xC4,
+            level
+        ]);
+
+        WriteAura(this.aura, 0xba, buffer);
+    }
+}
+
+
+/***
  * Set the zone to write
  * @param zone
  * @constructor
@@ -340,13 +359,7 @@ function SetSpeed(speed, update = true) {
  * @constructor
  */
 function Off() {
-    let offAura = {
-        'aura': this.aura,
-        'mode': Mode.Static,
-        'color1': Color('#000000')
-    }
-
-    UpdateDevice(offAura);
+    this.SetBrightness(0);
 }
 
 
@@ -355,7 +368,7 @@ function Off() {
  * @constructor
  */
 function On() {
-    this.Update();
+    this.SetBrightness(1);
 }
 
 /***

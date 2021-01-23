@@ -175,12 +175,52 @@ function Init(obj) {
         finally {
             if(this.aura !== null) {
                 this.descriptor = device;
-                // TODO: Attempt a hand-shake, but first need to understand data
+                Handshake(this.aura);
+                this.SetBrightness(1);
             }
         }
     }
 
     return (this.aura !== null);
+}
+
+
+function Handshake(aura) {
+    try {
+        SendIdString();
+        // NOt sure what the returned data means, or what the query means either.
+        // But the device won't talk after power-up until this sequence is observed.
+        aura.getFeatureReport(0x5E, 64);
+        SendQuery();
+        aura.getFeatureReport(0x5E, 64);
+    }
+    catch(e) {
+        console.log(e);
+    }
+
+    function SendIdString() {
+        let setData = Buffer.alloc(64, 0);
+        let idString = Buffer.from("ASUS Tech.Inc.");
+
+        setData[ 0] = 0x5e;
+        idString.copy(setData, 1);
+        aura.sendFeatureReport(setData);
+    }
+
+    function SendQuery() {
+        let setData = Buffer.alloc(64, 0);
+        let query = Buffer.from([
+            0x5e,
+            0x05,
+            0x20,
+            0x31,
+            0x00,
+            0x10
+        ]);
+
+        query.copy(setData, 0);
+        aura.sendFeatureReport(setData);
+    }
 }
 
 

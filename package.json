@@ -1,6 +1,6 @@
 {
   "name": "coruscate",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A Node module to control ASUS ROG Strix case lighting.",
   "main": "coruscate.js",
   "bin": {

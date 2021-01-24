@@ -27,6 +27,8 @@
 const HID = require('node-hid');
 const Color = require("color");
 
+const NUM_LEDS = 21;        // 20 leds in the GA15DH (LED index 20 controls the top 6)
+
 const SupportedDevices = {
     'GA15': {
         'vendorId': 0x0b05,
@@ -128,6 +130,12 @@ const Coruscate = {
     'SetSpeed': SetSpeed,
     'SetDirection': SetDirection,
     'SetBrightness': SetBrightness,
+    'SetLed': SetLed,
+    'FillLeds': FillLeds,
+    'ClearLed': ClearLed,
+    'ClearAllLeds': ClearAllLeds,
+    'InitDirect': InitDirect,
+    'UpdateDirect': UpdateDirect,
     'Off': Off,
     'On': On
 };
@@ -157,6 +165,7 @@ function Init(obj) {
     this.color2 = Color("#000000");
     this.speed = 0xe1;
     this.dir = Directions.Left;
+    this.leds = Buffer.alloc(NUM_LEDS * 3, 0x00);
 
     // Set any values passed in
     this.Update(obj);
@@ -431,6 +440,81 @@ function SetDirection(dir, update = true) {
 
 
 /***
+ * Sets the specific Led to the specified color
+ * @param led - 0 to NUM_LEDs - 1
+ * @param color
+ */
+function SetLed(led, color) {
+    if((led >= 0) && (led < NUM_LEDS)) {
+        let ledBuff = Buffer.from(Color(color).array());
+        let offset = led * 3;
+
+        ledBuff.copy(this.leds, offset, 0);
+    }
+}
+
+
+/***
+ * Fills the specified LED set with the specific color.
+ * @param color
+ * @param ledStart - The first led to fill (0-based)
+ * @param ledEnd - The last led to fill (0-based), if null, will fill to the end
+ * @constructor
+ */
+function FillLeds(color, ledStart, ledEnd = null) {
+    if((ledEnd == null) || (ledEnd > NUM_LEDS)) {
+        ledEnd = NUM_LEDS;
+    }
+    else if(ledEnd < 0) {
+        ledEnd = 0;
+    }
+
+    if((ledStart >= 0) && (ledStart < ledEnd)) {
+        let ledBuff = Buffer.from(Color(color).array());
+        let offset = ledStart * 3;
+        let ledCount = ledEnd - ledStart;
+
+        while(ledCount--) {
+            ledBuff.copy(this.leds, offset, 0);
+            offset += 3;
+        }
+    }
+}
+
+
+/***
+ * Clears the specific LED (sets it to all 0's
+ * @param led - 0 to NUM_LEDs - 1
+ * @constructor
+ */
+function ClearLed(led) {
+    if((led >= 0) && (led < NUM_LEDS)) {
+        let ledBuff = Buffer.from([0x00, 0x00, 0x00]);
+        let offset = led * 3;
+
+        ledBuff.copy(this.leds, offset, 0);
+    }
+}
+
+
+/***
+ * Clears the set of led Data
+ */
+function ClearAllLeds() {
+    this.leds = Buffer.alloc(NUM_LEDS * 3, 0x00);
+}
+
+
+/***
+ * Writes the current state of the LEDs directly to the controller.
+ * @constructor
+ */
+function UpdateDirect() {
+    WriteAuraDirect(this.aura, this.leds);
+}
+
+
+/***
  * Searchs HID devices for a matching device in SupportedDevices.
  * @returns {*} or undefined
  */
@@ -528,6 +612,55 @@ function WriteAura(aura, func, data) {
     data.copy(setData, 2);
 
     return aura.sendFeatureReport(setData);
+}
+
+
+/***
+ * Initialize direct mode, and clear all LEDs
+ * @constructor
+ */
+function InitDirect() {
+    let ledSet1 = Buffer.alloc(64, 0);
+
+    // Direct headers for both messages
+    let header1 = Buffer.from([0x5e, 0xbc, 0xd0]);
+    let header2 = Buffer.from([0x5e, 0xbc, 0xd0, 0x01, 0x02, 0x00, 0x00, 0x10, 0x00]);
+    let header3 = Buffer.from([0x5e, 0xbc, 0xd0, 0x01, 0x02, 0x00, 0x01, 0x04, 0x00]);
+
+    header1.copy(ledSet1, 0);
+    this.aura.sendFeatureReport(ledSet1);
+
+    header2.copy(ledSet1, 0);
+    this.aura.sendFeatureReport(ledSet1);
+
+    header3.copy(ledSet1, 0);
+    this.aura.sendFeatureReport(ledSet1);
+}
+
+
+/***
+ * Writes the provided LED data directly to the individual LEDs
+ * @param aura
+ * @param ledData
+ * @constructor
+ */
+function WriteAuraDirect(aura, ledData) {
+    let ledSet1 = Buffer.alloc(64, 0);
+    let ledSet2 = Buffer.alloc(64, 0);
+    let numLeds1 = 16;
+
+    // Direct headers for both messages
+    let header1 = Buffer.from([0x5e, 0xbc, 0xd0, 0x01, 0x02, 0x00, 0x00, 0x10, 0x00]);
+    let header2 = Buffer.from([0x5e, 0xbc, 0xd0, 0x01, 0x02, 0x00, 0x01, 0x04, 0x00]);
+
+    header1.copy(ledSet1, 0,0);
+    header2.copy(ledSet2, 0,0);
+
+    ledData.copy(ledSet1, header1.length, 0, numLeds1 * 3);
+    ledData.copy(ledSet2, header2.length, numLeds1 * 3);
+
+    aura.sendFeatureReport(ledSet1);
+    aura.sendFeatureReport(ledSet2);
 }
 
 

@@ -11,7 +11,7 @@
 
 ## Description
 
-Coruscate is a [NodeJs](https://nodejs.org/en/) library for controlling the LED case lighting on an [Asus ROG Strix GA15](https://rog.asus.com/desktops/mid-tower/rog-strix-ga15-series/) Desktop.
+Coruscate is a [NodeJs](https://nodejs.org/en/) library for controlling the LED case lighting on an [Asus ROG Strix GA15DH](https://rog.asus.com/desktops/mid-tower/rog-strix-ga15-series/) Desktop.
 
 This module also provides a command-line utility to control the lighting.
 
@@ -220,10 +220,62 @@ The `SetZone` method changes the zone for the following operations.  No changes 
 
 - **zone** - *number, required*: The zone to begin operating on.
 
+## Direct Mode Library Usage
+
+Coruscate also supports direct mode.  Direct mode allows each LED to be set to a unique color.
+
+### Basic Usage
+
+```javascript
+const Coruscate = require('coruscate');
+
+let lights = Coruscate.Coruscate();
+
+lights.InitDirect();    // Initialize direct-mode communication & Clear the LEDs
+
+let red = 12;
+
+// Set the LEDS to an increasing brightness of red
+for(let x = 0; x < 21; x++) {
+    lights.SetLed(x, `rgb( ${red}, 0, 0 )`);
+    red += 12;
+}
+
+lights.UpdateDirect();  // Send the LEDs to the device
+
+lights.Close();
+```
+### Direct Mode Methods
+
+```javascript
+lights.SetLed(index, color); // Index 0 - 20
+lights.FillLeds(color, start, end = null); // start and end indices; Will fill to the end if not provided
+lights.ClearLed(index);
+lights.ClearAllLeds();
+```
+
+### Examples
+
+There are a few examples in `examples/direct/`.  To run the examples:
+
+```
+$ node example/RunDirect.js <example>
+```
+
+Where <example> is one of `SingleLed`, `RedBlueDart`, `ColorCycle`, or `Kitt`.
+
+### LEDs on the GA15DH
+
+The GA15DH has 21 LEDs:
+- Front has 20 LEDs with indices of 0 (top) to 19 (bottom).
+- Vertical, inside, has 20 LEDs which reverse-mirror the front with indices 0 (bottom) to 19 (top).
+- Top, inside, has 6 LEDs, which are all controlled with index 20.
 
 ## Command Line Usage
 
 The provided `coruscate` command-line utility (if installed) can be used to control the case lights.
+
+The command-line utility can only be used to set one of the pre-defined modes.  It does not support direct control.
 
 > Note: The user running the command must have write priviledges to the appropriate USB HID device.  Sudo privileges may be required.
 

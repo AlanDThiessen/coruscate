@@ -1,6 +1,6 @@
 {
   "name": "coruscate",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "description": "A Node module to control ASUS ROG Strix case lighting.",
   "main": "coruscate.js",
   "bin": {
@@ -17,6 +17,7 @@
     "Asus",
     "ROG",
     "Strix",
+    "GA15DH",
     "LED"
   ],
   "author": "Alan Thiessen",
